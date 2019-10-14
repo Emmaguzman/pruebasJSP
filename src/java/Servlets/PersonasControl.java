@@ -16,10 +16,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "personsList", urlPatterns = {"/Personas"})
+@WebServlet(name = "PersonasControl", urlPatterns = {"/PersonasControl"})
 public class PersonasControl extends HttpServlet {
 
+    private Conexion conn;
+
     @Override
+    public void init() throws ServletException {
+        super.init();
+        try {
+            conn = new Conexion();
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+
+    }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -35,12 +46,19 @@ public class PersonasControl extends HttpServlet {
                 case "AGREGAR":
                     agregarPersona(request, response);
                     break;
+                case "CARGA":
+                    cargarPersona(request, response);
+                    break;
+                case "BORRAR":
+                    borrarPersona(request, response);
+                    break;
+                case "ACTUALIZAR":
+                    actualizarPersona(request,response);
+                    break;
                 default:
                     listaPersonas(request, response);
                     break;
-                    
             }
-
         } catch (Exception exc) {
             throw new ServletException(exc);
         }
@@ -58,18 +76,44 @@ public class PersonasControl extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    private void agregarPersona(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String nombre = request.getParameter("txtNombre");
+        String apellido = request.getParameter("txtApellido");
+        Persona p = new Persona(nombre, apellido);
+        conn.agregarPersona(p);
+        listaPersonas(request, response);
+
+    }
+
     private void listaPersonas(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        Conexion conn = new Conexion();
         ArrayList<Persona> lista = conn.listarPersonas();
         request.setAttribute("List", lista);
         RequestDispatcher rd = request.getRequestDispatcher("/listaPersona.jsp");
         rd.forward(request, response);
     }
 
-    private void agregarPersona(HttpServletRequest request, HttpServletResponse response) {
-        
-        
+    private void cargarPersona(HttpServletRequest request, HttpServletResponse response) throws Exception {
+      
+        Persona miPersona = conn.traerPersona(request.getParameter("idPersona"));
+        request.setAttribute("miPersona", miPersona);
+        RequestDispatcher rd = request.getRequestDispatcher("/Actualizar_Persona.jsp");
+        rd.forward(request, response);
+    }
+    
 
+    private void borrarPersona(HttpServletRequest request, HttpServletResponse response)throws Exception {        
+        conn.borrarPersona((request.getParameter("idPersona")));
+        listaPersonas(request, response);
+    }
+
+    private void actualizarPersona(HttpServletRequest request, HttpServletResponse response) throws Exception{  
+        int id=Integer.parseInt(request.getParameter("idPersona"));
+        String nombre=request.getParameter("txtNombre");
+        String apellido=request.getParameter("txtApellido");
+        Persona p=new Persona(id,nombre,apellido);
+        
+        conn.actualizarPersona(p);
+        listaPersonas(request,response);
     }
 
 }
