@@ -44,24 +44,59 @@ public class Conexion {
 
        try {
             if(conn != null && !conn.isClosed())
-                conn.close();System.out.println("conn cerrado");            
+                conn.close();          
             if(rs!=null && !rs.isClosed())
-                rs.close();System.out.println("rs cerrado");
+                rs.close();
             if(!st.isClosed() && st!=null)
-                st.close();System.out.println("st cerrado");
+                st.close();
             
             
         } catch (Exception e) {
             System.out.println("Error al cerrar conexión");
         }
     }
-    public Persona traerPersona(int id){
-    Persona p=null;
-    final String QUERY="select * from personas where id=?";
+    public void borrarPersona(String id){
+        int personaid=Integer.parseInt(id);
+        final String QUERY="delete from  personas where id=?";
+        try{
+            conectar();
+            prep=conn.prepareStatement(QUERY);
+            prep.setInt(1, personaid);
+            prep.execute();
+            
+            
+        }catch(Exception e)
+        {e.printStackTrace();}
+        finally{
+        cerrar();
+        }
+    }
+
+    public void actualizarPersona(Persona p){
+        final String QUERY="update Personas set nombre=?,apellido=? where id=?";
         try {
             conectar();
             prep=conn.prepareStatement(QUERY);
-            prep.setInt(1,id);
+            prep.setString(1,p.getNombre());
+            prep.setString(2,p.getApellido());
+            prep.setInt(3,p.getId());
+            
+            prep.execute();
+        } catch (Exception e) {
+            
+        }finally{
+        cerrar();
+        }
+    
+    }
+    public Persona traerPersona(String id){
+    Persona p=null;
+    final String QUERY="select * from personas where id=?";
+        try {
+            int idPersona=Integer.parseInt(id);
+            conectar();
+            prep=conn.prepareStatement(QUERY);
+            prep.setInt(1,idPersona);
             rs=prep.executeQuery();
             while(rs.next()){
             p=new Persona(rs.getInt(1),rs.getString(2),rs.getString(3));            
@@ -109,6 +144,7 @@ public class Conexion {
             inserto=true;
             System.out.println("Insercion Correcta");
         } catch (Exception e) {
+            e.printStackTrace();
         }finally{
             cerrar();
         }

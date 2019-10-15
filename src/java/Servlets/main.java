@@ -15,9 +15,9 @@ import Modelo.Persona;
 public class main {
     public static void main(String[] args) {
         
-        Conexion con=new Conexion();
+       
         
-        System.out.println(con.traerPersona(1).toString());
+        
     }
     
     
